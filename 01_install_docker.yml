@@ -1,0 +1,83 @@
+---
+- hosts: all
+  tasks:
+  - name: Add docker apt key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add docker apt repo
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+      state: present
+
+  - name: Upgrade all packages
+    apt:
+      name: "*"
+      state: latest
+
+  - name: Install docker
+    apt:
+      name: docker-ce=18.06.1~ce~3-0~ubuntu
+      state: present
+
+  - name: Pin Docker-engine release
+    copy:
+      dest: /etc/apt/preferences.d/docker-engine
+      content: |
+        Package: docker-ce
+        Pin: version 18.06.1~ce~3-0~ubuntu
+        Pin-Priority: 1002
+
+  - name: Get docker version
+    command: docker version
+    register: docker_vsn
+
+  - name: Dump docker version
+    debug: var=docker_vsn.stdout_lines
+
+  - name: Add k8s apt key
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+
+  - name: Add k8s apt repo
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+
+  - name: Upgrade all packages
+    apt:
+      name: "*"
+      state: latest
+
+  - name: Install kube* packages
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - kubelet=1.12.7-00
+      - kubeadm=1.12.7-00
+      - kubectl=1.12.7-00
+
+  - name: Pin kube* package vsns
+    copy:
+      dest: "/etc/apt/preferences.d/{{ item.name }}"
+      content: |
+        Package: "{{ item.name }}"
+        Pin: "version {{ item.version }}"
+        Pin-Priority: 1002
+    with_items:
+      - name: kubelet
+        version: 1.12.7-00
+      - name: kubeadm
+        version: 1.12.7-00
+      - name: kubectl
+        version: 1.12.7-00
+
+  - name: Get kubeadm version
+    command: kubeadm version
+    register: kubeadm_vsn
+
+  - name: Dump kubeadm version
+    debug: var=kubeadm_vsn.stdout_lines

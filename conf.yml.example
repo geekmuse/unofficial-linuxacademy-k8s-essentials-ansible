@@ -1,0 +1,6 @@
+username: k8s_adm
+password: neverguessm3
+master_dns: k8s-master.mydomain.com
+nodes_dns:
+  - k8s-node-1.mydomain.com
+  - k8s-node-2.mydomain.com

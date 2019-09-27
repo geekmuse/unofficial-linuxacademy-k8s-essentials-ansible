@@ -1,0 +1,13 @@
+---
+- hosts: all
+  tasks:
+  - name: systctl - add bridge
+    lineinfile:
+      path: /etc/sysctl.conf
+      regexp: '^net.bridge.bridge-nf-call-iptables='
+      line: net.bridge.bridge-nf-call-iptables=1
+      state: present
+
+  - name: sysctl -p
+    command: sysctl -p
+    

@@ -1,0 +1,33 @@
+---
+- hosts: master
+  tasks:
+  - name: kubeadm init
+    shell: kubeadm init --pod-network-cidr=10.244.0.0/16 | grep 'kubeadm join' >/tmp/kubeadm_join
+    args:
+      executable: /bin/bash
+
+  - name: get join script
+    fetch:
+      src: /tmp/kubeadm_join
+      dest: kubeadm_join
+      flat: yes
+
+  - name: make .kube directory
+    file:
+      path: "{{ ansible_env.HOME }}/.kube"
+      state: directory
+
+  - name: symlink .kube/config to admin.conf 
+    file:
+      src: /etc/kubernetes/admin.conf
+      dest: "{{ ansible_env.HOME }}/.kube/config"
+      state: link
+      owner: root
+      group: root
+
+  - name: Get kubectl version
+    command: kubectl version
+    register: kubectl_vsn
+
+  - name: Dump kubectl version
+    debug: var=kubectl_vsn.stdout_lines

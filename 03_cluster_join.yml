@@ -1,0 +1,7 @@
+---
+- hosts: nodes
+  tasks:
+  - name: run cluster join
+    script: kubeadm_join
+    args:
+      executable: /bin/bash
